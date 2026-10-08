@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>NEXUS 추천코드</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;background:#070a12;color:#eef2ff;font-family:Arial,Pretendard,sans-serif;display:flex;align-items:center;justify-content:center;padding:24px}
+.card{position:relative;width:min(560px,100%);padding:34px;border:1px solid #28314b;border-radius:20px;background:#0d111c;box-shadow:0 25px 80px #0008;text-align:center}
+.close{position:absolute;top:14px;right:16px;width:36px;height:36px;border:0;background:transparent;color:#8f9bb3;font-size:28px;line-height:36px;cursor:pointer;border-radius:8px}
+.close:hover{background:#182033;color:#fff}
+.logo{font-weight:900;letter-spacing:.18em;margin-bottom:28px}
+h1{margin:0 0 12px;font-size:30px}
+p{color:#9aa8c1;line-height:1.7;margin:8px 0}
+.warning{margin:20px 0 0;padding:13px 15px;border:1px solid #5a3f3f;border-radius:10px;background:#211719;color:#d8a7a7;font-size:13px;line-height:1.6;text-align:left}
+.code{margin:22px 0 14px;padding:20px;border-radius:14px;background:#080d16;border:1px solid #303b57;font-size:28px;font-weight:900;letter-spacing:.12em;word-break:break-all}
+button.action{width:100%;padding:14px;border:0;border-radius:10px;background:#fff;color:#0b0d14;font-weight:900;font-size:15px;cursor:pointer;margin-top:10px}
+button.secondary{background:#20283b;color:#fff}
+.note{font-size:13px;margin-top:18px;color:#7f8da7}
+.status{margin-top:12px;font-size:13px;color:#9db0d8;min-height:18px}
+</style>
+</head>
+<body>
+<div class="card">
+  <button class="close" id="close" aria-label="닫기">×</button>
+
+  <div class="logo">NEXUS</div>
+  <h1>내 추천코드</h1>
+  <p>아래 추천코드를 캡처해서 구매하려는 친구에게 전달해주세요.</p>
+  <p>친구가 구매할 때 <strong>이 추천코드를 나에게 보여주면</strong> 추천인으로 확인할 수 있습니다.</p>
+
+  <div class="warning">
+    ⚠️ <strong>추천코드 변경 안내</strong><br>
+    기존 추천코드가 아닌 새 추천코드를 발급할 경우,
+    <strong>기존 추천코드로 초대해주신 유저분들의 정보는 초기화되어 사라질 수 있습니다.</strong>
+    특별한 이유가 없다면 기존 추천코드를 계속 사용해주세요.
+  </div>
+
+  <div id="code" class="code">발급 중...</div>
+
+  <button class="action" id="copy">추천코드 복사</button>
+  <button class="action secondary" id="new">새 추천코드 발급</button>
+
+  <div id="status" class="status"></div>
+  <div class="note">추천 링크를 만들거나 공유할 필요가 없습니다. 추천코드만 캡처해서 전달하면 됩니다.</div>
+</div>
+
+<script>
+(function () {
+  const codeEl = document.getElementById('code');
+  const statusEl = document.getElementById('status');
+
+  function makeCode() {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    let code = 'NEXUS-';
+    for (let i = 0; i < 6; i++) {
+      code += chars[Math.floor(Math.random() * chars.length)];
+    }
+    return code;
+  }
+
+  function getCode() {
+    try { return localStorage.getItem('nexus_my_referral_code'); }
+    catch (e) { return null; }
+  }
+
+  function saveCode(code) {
+    try { localStorage.setItem('nexus_my_referral_code', code); }
+    catch (e) {}
+  }
+
+  function issueCode(force) {
+    let code = force ? null : getCode();
+
+    if (!code) {
+      code = makeCode();
+      saveCode(code);
+    }
+
+    codeEl.textContent = code;
+    statusEl.textContent = force
+      ? '새 추천코드를 발급했습니다.'
+      : '';
+  }
+
+  document.getElementById('copy').addEventListener('click', async function () {
+    const code = codeEl.textContent;
+    try {
+      await navigator.clipboard.writeText(code);
+      statusEl.textContent = '추천코드를 복사했습니다.';
+    } catch (e) {
+      const temp = document.createElement('textarea');
+      temp.value = code;
+      document.body.appendChild(temp);
+      temp.select();
+      document.execCommand('copy');
+      temp.remove();
+      statusEl.textContent = '추천코드를 복사했습니다.';
+    }
+  });
+
+  document.getElementById('new').addEventListener('click', function () {
+    if (!confirm('새 추천코드를 발급하면 기존 추천코드로 초대한 유저 정보가 초기화될 수 있습니다. 그래도 새 코드를 발급할까요?')) return;
+    issueCode(true);
+  });
+
+  document.getElementById('close').addEventListener('click', function () {
+    if (history.length > 1) history.back();
+    else window.location.href = '/';
+  });
+
+  issueCode(false);
+})();
+</script>
+</body>
+</html>
